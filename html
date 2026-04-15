@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Absensi Pengiriman Laporan - Koramil Sukasada</title>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #7f8c8d;
+            font-family: 'Times New Roman', 'Calibri', 'Segoe UI', serif;
+            padding: 30px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .app-container {
+            max-width: 1000px;
+            width: 100%;
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .absensi-card {
+            background: white;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            width: 100%;
+        }
+
+        .header {
+            background: #1a3c2c;
+            padding: 20px 25px;
+            color: white;
+            text-align: center;
+            border-bottom: 4px solid #f7b32b;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .header h2 {
+            margin: 5px 0 0;
+            font-size: 0.9rem;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+
+        .periode-box {
+            background: #f7b32b;
+            display: inline-block;
+            padding: 5px 20px;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #1a3c2c;
+        }
+
+        .document-body {
+            padding: 20px 25px;
+            background: white;
+        }
+
+        .title-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .title-section h3 {
+            color: #1a3c2c;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .title-section p {
+            font-size: 0.7rem;
+            color: #5a7c6a;
+        }
+
+        .summary-info {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e8e3;
+        }
+
+        .summary-item {
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .summary-item .label {
+            font-size: 0.75rem;
+            color: #5a7c6a;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .summary-item .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1a3c2c;
+        }
+
+        .summary-item .value.belum {
+            color: #b91c1c;
+        }
+
+        .desa-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+            font-size: 0.85rem;
+        }
+
+        .desa-table th {
+            background: #e8f0ec;
+            border: 1px solid #b8ccc0;
+            padding: 10px 12px;
+            text-align: center;
+            font-weight: bold;
+            color: #1a3c2c;
+        }
+
+        .desa-table td {
+            border: 1px solid #b8ccc0;
+            padding: 8px 12px;
+            vertical-align: middle;
+        }
+
+        .desa-table td:first-child {
+            text-align: center;
+            width: 50px;
+        }
+
+        .status-radio-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .status-option input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #1a3c2c;
+        }
+
+        .status-sudah {
+            color: #1a5e3a;
+        }
+
+        .status-belum {
+            color: #b91c1c;
+        }
+
+        .status-text {
+            text-align: center;
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            min-width: 100px;
+        }
+
+        .status-text.sudah {
+            background: #e8f5e9;
+            color: #1a5e3a;
+            border: 1px solid #a5d6a7;
+        }
+
+        .status-text.belum {
+            background: #ffebee;
+            color: #b91c1c;
+            border: 1px solid #ffcdd2;
+        }
+
+        .control-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .ctrl-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            transition: opacity 0.2s;
+        }
+
+        .ctrl-btn:hover {
+            opacity: 0.85;
+        }
+
+        .ctrl-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .ctrl-btn.kirim {
+            background: #1a3c2c;
+            color: white;
+        }
+
+        .ctrl-btn.belum {
+            background: #b91c1c;
+            color: white;
+        }
+
+        .ctrl-btn.png {
+            background: #26a5e4;
+            color: white;
+        }
+
+        .ctrl-btn.sync {
+            background: #f39c12;
+            color: white;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .form-row label {
+            font-weight: 600;
+            font-size: 0.8rem;
+            min-width: 60px;
+        }
+
+        .form-row input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            z-index: 1200;
+            opacity: 0;
+            transition: 0.2s;
+            pointer-events: none;
+        }
+
+        .toast-msg.show {
+            opacity: 1;
+        }
+
+        .sync-status {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 10px;
+            padding: 5px;
+            color: #666;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 15px;
+            }
+
+            .document-body {
+                padding: 15px;
+            }
+
+            .summary-info {
+                flex-direction: column;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .status-radio-group {
+                gap: 10px;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- DOKUMEN ABSENSI - YANG AKAN DI-PNG -->
+    <div class="absensi-card" id="captureArea">
+        <div class="header">
+            <h1>KORAMIL 1609-05/SUKASADA</h1>
+            <h2>KECAMATAN SUKASADA</h2>
+            <div class="periode-box" id="periodeTextDisplay">📅 -</div>
+        </div>
+        <div class="document-body">
+            <div class="title-section">
+                <h3>ABSENSI PENGIRIMAN LAPORAN DUKOPS BABINSA</h3>
+                <p>14 Desa + 1 Kelurahan Se-Kecamatan Sukasada</p>
+            </div>
+
+            <!-- Ringkasan -->
+            <div class="summary-info">
+                <div class="summary-item">
+                    <div class="label">📤 SUDAH KIRIM LAPORAN</div>
+                    <div class="value" id="counterSudah">0</div>
+                </div>
+                <div class="summary-item">
+                    <div class="label">⏳ BELUM KIRIM LAPORAN</div>
+                    <div class="value belum" id="counterBelum">0</div>
+                </div>
+                <div class="summary-item">
+                    <div class="label">📊 TOTAL</div>
+                    <div class="value" id="totalDesa">15</div>
+                </div>
+            </div>
+
+            <!-- Tabel Desa - versi input (radio) untuk interaksi -->
+            <table class="desa-table" id="desaTableInput">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Desa / Kelurahan</th>
+                        <th>Status Pengiriman Laporan</th>
+                    </tr>
+                </thead>
+                <tbody id="desaTableBodyInput"></tbody>
+            </table>
+
+            <!-- Tabel Desa - versi teks (hanya untuk PNG, tersembunyi di layar) -->
+            <table class="desa-table" id="desaTablePng" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Desa / Kelurahan</th>
+                        <th>Status Pengiriman Laporan</th>
+                    </tr>
+                </thead>
+                <tbody id="desaTableBodyPng"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Panel Kontrol -->
+    <div class="control-panel">
+        <div class="form-row">
+            <label>📆 Periode:</label>
+            <input type="text" id="periodeInput" placeholder="Contoh: April 2026" value="April 2026">
+        </div>
+        <div class="control-buttons">
+            <button id="syncBtn" class="ctrl-btn sync">🔄 SYNC DARI GOOGLE DRIVE</button>
+            <button id="allSudahBtn" class="ctrl-btn kirim">📤 Semua SUDAH KIRIM</button>
+            <button id="allBelumBtn" class="ctrl-btn belum">⏳ Semua BELUM KIRIM</button>
+            <button id="saveAsPngBtn" class="ctrl-btn png">📸 SIMPAN PNG</button>
+        </div>
+        <div class="sync-status" id="syncStatus">
+            💾 Data tersimpan otomatis di browser | Klik SYNC untuk ambil status dari Google Drive
+        </div>
+    </div>
+</div>
+<div id="toastMsg" class="toast-msg">✨ Notifikasi</div>
+
+<script>
+    // ======================== DAFTAR WILAYAH ========================
+    const daftarWilayah = [
+        "Desa Ambengan",
+        "Desa Pegayaman",
+        "Desa Gitgit",
+        "Desa Tegallinggah",
+        "Desa Panji",
+        "Kelurahan Sukasada",
+        "Desa Wanagiri",
+        "Desa Selat",
+        "Desa Kayu Putih",
+        "Desa Padangbulia",
+        "Desa Pancasari",
+        "Desa Silangjana",
+        "Desa Panji Anom",
+        "Desa Pegadungan",
+        "Desa Sambangan"
+    ];
+
+    // ======================== KONFIGURASI ========================
+    // ⚠️ WAJIB GANTI: Masukkan URL Web App dari Google Apps Script setelah deploy
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxxxx/exec"; // <-- GANTI INI!
+    
+    // Status: true = SUDAH KIRIM, false = BELUM KIRIM
+    let statusState = new Array(daftarWilayah.length).fill(false);
+    let isSyncing = false;
+
+    // DOM elements
+    const desaTableBodyInput = document.getElementById('desaTableBodyInput');
+    const desaTableBodyPng = document.getElementById('desaTableBodyPng');
+    const counterSudahSpan = document.getElementById('counterSudah');
+    const counterBelumSpan = document.getElementById('counterBelum');
+    const totalDesaSpan = document.getElementById('totalDesa');
+    const allSudahBtn = document.getElementById('allSudahBtn');
+    const allBelumBtn = document.getElementById('allBelumBtn');
+    const syncBtn = document.getElementById('syncBtn');
+    const saveAsPngBtn = document.getElementById('saveAsPngBtn');
+    const periodeInput = document.getElementById('periodeInput');
+    const periodeTextDisplay = document.getElementById('periodeTextDisplay');
+    const toastMsg = document.getElementById('toastMsg');
+    const syncStatusDiv = document.getElementById('syncStatus');
+
+    totalDesaSpan.innerText = daftarWilayah.length;
+
+    function showToast(message, isError = false) {
+        toastMsg.textContent = message;
+        toastMsg.classList.add('show');
+        toastMsg.style.backgroundColor = isError ? "#b91c1c" : "#1a3c2c";
+        setTimeout(() => toastMsg.classList.remove('show'), 3000);
+    }
+
+    function updateUI() {
+        const totalSudah = statusState.filter(v => v === true).length;
+        const totalBelum = statusState.length - totalSudah;
+        counterSudahSpan.innerText = totalSudah;
+        counterBelumSpan.innerText = totalBelum;
+        
+        let periodeVal = periodeInput.value.trim();
+        if (periodeVal === "") periodeVal = "Belum diisi";
+        periodeTextDisplay.innerText = `📅 ${periodeVal}`;
+        
+        renderInputTable();
+        renderPngTable();
+        simpanKeLocal();
+    }
+
+    // Render tabel dengan radio button (untuk interaksi user)
+    function renderInputTable() {
+        if (!desaTableBodyInput) return;
+        desaTableBodyInput.innerHTML = '';
+        daftarWilayah.forEach((wilayah, idx) => {
+            const isSudah = statusState[idx];
+            const row = document.createElement('tr');
+            
+            const tdNo = document.createElement('td');
+            tdNo.innerText = (idx + 1).toString();
+            tdNo.style.textAlign = 'center';
+            
+            const tdNama = document.createElement('td');
+            tdNama.innerText = wilayah;
+            if (wilayah.includes("Kelurahan")) {
+                tdNama.style.fontWeight = 'bold';
+                tdNama.style.color = '#1a3c2c';
+            }
+            
+            const tdStatus = document.createElement('td');
+            const statusGroup = document.createElement('div');
+            statusGroup.className = 'status-radio-group';
+            
+            // Radio Sudah Kirim
+            const sudahLabel = document.createElement('label');
+            sudahLabel.className = 'status-option status-sudah';
+            const radioSudah = document.createElement('input');
+            radioSudah.type = 'radio';
+            radioSudah.name = `status_${idx}`;
+            radioSudah.value = 'sudah';
+            radioSudah.checked = isSudah === true;
+            radioSudah.addEventListener('change', () => {
+                if (radioSudah.checked) {
+                    statusState[idx] = true;
+                    updateUI();
+                }
+            });
+            sudahLabel.appendChild(radioSudah);
+            sudahLabel.appendChild(document.createTextNode('Sudah Kirim'));
+            
+            // Radio Belum Kirim
+            const belumLabel = document.createElement('label');
+            belumLabel.className = 'status-option status-belum';
+            const radioBelum = document.createElement('input');
+            radioBelum.type = 'radio';
+            radioBelum.name = `status_${idx}`;
+            radioBelum.value = 'belum';
+            radioBelum.checked = isSudah === false;
+            radioBelum.addEventListener('change', () => {
+                if (radioBelum.checked) {
+                    statusState[idx] = false;
+                    updateUI();
+                }
+            });
+            belumLabel.appendChild(radioBelum);
+            belumLabel.appendChild(document.createTextNode('Belum Kirim'));
+            
+            statusGroup.appendChild(sudahLabel);
+            statusGroup.appendChild(belumLabel);
+            tdStatus.appendChild(statusGroup);
+            
+            row.appendChild(tdNo);
+            row.appendChild(tdNama);
+            row.appendChild(tdStatus);
+            desaTableBodyInput.appendChild(row);
+        });
+    }
+
+    // Render tabel dengan teks (untuk PNG)
+    function renderPngTable() {
+        if (!desaTableBodyPng) return;
+        desaTableBodyPng.innerHTML = '';
+        daftarWilayah.forEach((wilayah, idx) => {
+            const isSudah = statusState[idx];
+            const row = document.createElement('tr');
+            
+            const tdNo = document.createElement('td');
+            tdNo.innerText = (idx + 1).toString();
+            tdNo.style.textAlign = 'center';
+            
+            const tdNama = document.createElement('td');
+            tdNama.innerText = wilayah;
+            if (wilayah.includes("Kelurahan")) {
+                tdNama.style.fontWeight = 'bold';
+                tdNama.style.color = '#1a3c2c';
+            }
+            
+            const tdStatus = document.createElement('td');
+            tdStatus.style.textAlign = 'center';
+            
+            const statusSpan = document.createElement('span');
+            if (isSudah) {
+                statusSpan.className = 'status-text sudah';
+                statusSpan.innerText = 'SUDAH KIRIM';
+            } else {
+                statusSpan.className = 'status-text belum';
+                statusSpan.innerText = 'BELUM KIRIM';
+            }
+            tdStatus.appendChild(statusSpan);
+            
+            row.appendChild(tdNo);
+            row.appendChild(tdNama);
+            row.appendChild(tdStatus);
+            desaTableBodyPng.appendChild(row);
+        });
+    }
+
+    // ============ FUNGSI SYNC DARI GOOGLE DRIVE ============
+    async function syncFromDrive() {
+        if (isSyncing) {
+            showToast("⏳ Sync sedang berjalan, tunggu sebentar...", false);
+            return;
+        }
+        
+        // Cek apakah URL sudah diganti
+        if (WEB_APP_URL === "https://script.google.com/macros/s/AKfycbxxxx/exec") {
+            showToast("⚠️ URL Web App belum diatur! Ganti variabel WEB_APP_URL dengan URL Apps Script yang sudah di-deploy.", true);
+            syncStatusDiv.innerHTML = "⚠️ Konfigurasi belum lengkap: Ganti WEB_APP_URL dengan URL Apps Script!";
+            syncStatusDiv.style.color = "#b91c1c";
+            return;
+        }
+        
+        isSyncing = true;
+        syncBtn.disabled = true;
+        syncBtn.innerHTML = "⏳ MENYINKRONKAN...";
+        syncStatusDiv.innerHTML = "🔄 Sedang membaca folder dari Google Drive...";
+        syncStatusDiv.style.color = "#f39c12";
+        showToast("🔄 Membaca folder dari Google Drive...", false);
+        
+        try {
+            const response = await fetch(WEB_APP_URL + "?action=getStatus&t=" + Date.now());
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            if (!Array.isArray(data)) {
+                throw new Error("Respons dari server tidak valid");
+            }
+            
+            // Update status berdasarkan data dari Drive
+            for (let i = 0; i < Math.min(data.length, daftarWilayah.length); i++) {
+                statusState[i] = (data[i] === "sudah");
+            }
+            
+            updateUI();
+            
+            const totalSudah = statusState.filter(v => v === true).length;
+            syncStatusDiv.innerHTML = `✅ Sync berhasil! ${totalSudah} desa sudah kirim laporan.`;
+            syncStatusDiv.style.color = "#1a5e3a";
+            showToast(`✅ Sinkron selesai! ${totalSudah} desa sudah mengirim laporan.`, false);
+            
+        } catch (err) {
+            console.error("Sync error:", err);
+            syncStatusDiv.innerHTML = `❌ Gagal sync: ${err.message}. Cek koneksi atau URL Web App.`;
+            syncStatusDiv.style.color = "#b91c1c";
+            showToast(`❌ Gagal sync: ${err.message}`, true);
+        } finally {
+            isSyncing = false;
+            syncBtn.disabled = false;
+            syncBtn.innerHTML = "🔄 SYNC DARI GOOGLE DRIVE";
+            
+            // Reset status text setelah 5 detik
+            setTimeout(() => {
+                if (!isSyncing) {
+                    syncStatusDiv.innerHTML = "💾 Data tersimpan otomatis di browser | Klik SYNC untuk ambil status dari Google Drive";
+                    syncStatusDiv.style.color = "#666";
+                }
+            }, 5000);
+        }
+    }
+
+    function allSudah() {
+        for (let i = 0; i < statusState.length; i++) statusState[i] = true;
+        updateUI();
+        showToast("✅ Semua wilayah: SUDAH KIRIM LAPORAN", false);
+    }
+
+    function allBelum() {
+        for (let i = 0; i < statusState.length; i++) statusState[i] = false;
+        updateUI();
+        showToast("⏳ Semua wilayah: BELUM KIRIM LAPORAN", false);
+    }
+
+    async function saveAsPng() {
+        // Sembunyikan tabel input (radio), tampilkan tabel teks untuk PNG
+        const inputTable = document.getElementById('desaTableInput');
+        const pngTable = document.getElementById('desaTablePng');
+        
+        if (inputTable) inputTable.style.display = 'none';
+        if (pngTable) pngTable.style.display = 'table';
+        
+        // Update periode display
+        let periodeVal = periodeInput.value.trim();
+        if (periodeVal === "") periodeVal = "Belum diisi";
+        periodeTextDisplay.innerText = `📅 ${periodeVal}`;
+        
+        const element = document.getElementById('captureArea');
+        if (!element) return;
+        
+        const originalText = saveAsPngBtn.innerHTML;
+        saveAsPngBtn.disabled = true;
+        saveAsPngBtn.innerHTML = "⏳ Memproses...";
+        
+        try {
+            const canvas = await html2canvas(element, {
+                scale: 3.5,
+                backgroundColor: '#ffffff',
+                logging: false,
+                useCORS: false,
+                windowWidth: element.scrollWidth,
+                windowHeight: element.scrollHeight
+            });
+            
+            const safeFileName = `Absensi_Pengiriman_Laporan_${periodeVal.replace(/[^a-zA-Z0-9_\-]/g, '_')}.png`;
+            
+            const link = document.createElement('a');
+            link.download = safeFileName;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            
+            showToast(`✅ Tersimpan: ${safeFileName}`, false);
+        } catch (err) {
+            console.error(err);
+            showToast(`❌ Gagal: ${err.message}`, true);
+        } finally {
+            // Kembalikan ke mode input (radio)
+            if (inputTable) inputTable.style.display = 'table';
+            if (pngTable) pngTable.style.display = 'none';
+            saveAsPngBtn.disabled = false;
+            saveAsPngBtn.innerHTML = originalText;
+        }
+    }
+
+    function simpanKeLocal() {
+        localStorage.setItem('absensiLaporanStatusFinal', JSON.stringify(statusState));
+        localStorage.setItem('absensiLaporanPeriodeFinal', periodeInput.value.trim());
+    }
+
+    function loadLocal() {
+        const saved = localStorage.getItem('absensiLaporanStatusFinal');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed) && parsed.length === daftarWilayah.length) {
+                    statusState = parsed;
+                }
+            } catch(e) {
+                console.error("Gagal load localStorage:", e);
+            }
+        }
+        const savedPeriode = localStorage.getItem('absensiLaporanPeriodeFinal');
+        if (savedPeriode) periodeInput.value = savedPeriode;
+        
+        updateUI();
+    }
+
+    function bindEvents() {
+        syncBtn.addEventListener('click', syncFromDrive);
+        allSudahBtn.addEventListener('click', allSudah);
+        allBelumBtn.addEventListener('click', allBelum);
+        saveAsPngBtn.addEventListener('click', saveAsPng);
+        periodeInput.addEventListener('input', () => { updateUI(); simpanKeLocal(); });
+    }
+
+    function init() {
+        bindEvents();
+        loadLocal();
+        
+        // Auto sync saat pertama buka (delay 1 detik)
+        setTimeout(() => {
+            if (WEB_APP_URL !== "https://script.google.com/macros/s/AKfycbxxxx/exec") {
+                syncFromDrive();
+            } else {
+                syncStatusDiv.innerHTML = "⚠️ Konfigurasi belum lengkap: Ganti WEB_APP_URL dengan URL Apps Script!";
+                syncStatusDiv.style.color = "#b91c1c";
+                showToast("⚠️ Silakan ganti WEB_APP_URL dengan URL Google Apps Script yang sudah di-deploy", true);
+            }
+        }, 1000);
+    }
+    
+    init();
+</script>
+</body>
+</html>
