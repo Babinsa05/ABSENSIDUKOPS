@@ -258,6 +258,7 @@
             gap: 12px;
             margin-bottom: 12px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .form-row label {
@@ -266,12 +267,21 @@
             min-width: 60px;
         }
 
-        .form-row input {
+        .form-row select {
             flex: 1;
             padding: 8px 12px;
             border: 1px solid #ccc;
             border-radius: 6px;
             font-family: inherit;
+            background: white;
+        }
+
+        .form-row input {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-family: inherit;
+            width: 80px;
         }
 
         .toast-msg {
@@ -384,8 +394,23 @@
     <!-- Panel Kontrol -->
     <div class="control-panel">
         <div class="form-row">
-            <label>📆 Periode:</label>
-            <input type="text" id="periodeInput" placeholder="Contoh: April 2026" value="April 2026">
+            <label>📆 Bulan:</label>
+            <select id="bulanSelect">
+                <option value="Januari">Januari</option>
+                <option value="Februari">Februari</option>
+                <option value="Maret">Maret</option>
+                <option value="April">April</option>
+                <option value="Mei">Mei</option>
+                <option value="Juni">Juni</option>
+                <option value="Juli">Juli</option>
+                <option value="Agustus">Agustus</option>
+                <option value="September">September</option>
+                <option value="Oktober">Oktober</option>
+                <option value="November">November</option>
+                <option value="Desember">Desember</option>
+            </select>
+            <label>Tahun:</label>
+            <input type="text" id="tahunInput" placeholder="Tahun" value="2026">
         </div>
         <div class="control-buttons">
             <button id="syncBtn" class="ctrl-btn sync">🔄 SYNC DARI GOOGLE DRIVE</button>
@@ -402,7 +427,27 @@
 
 <script>
     // ======================== DAFTAR WILAYAH ========================
+    // Nama folder di Google Drive (tanpa Desa/Kelurahan)
     const daftarWilayah = [
+        "Ambengan",
+        "Pegayaman",
+        "Gitgit",
+        "Tegallinggah",
+        "Panji",
+        "Sukasada",
+        "Wanagiri",
+        "Selat",
+        "Kayu Putih",
+        "Padang Bulia",
+        "Pancasari",
+        "Silangjana",
+        "Panji Anom",
+        "Pegadungan",
+        "Sambangan"
+    ];
+
+    // Nama lengkap untuk tampilan di tabel
+    const daftarWilayahTampilan = [
         "Desa Ambengan",
         "Desa Pegayaman",
         "Desa Gitgit",
@@ -412,7 +457,7 @@
         "Desa Wanagiri",
         "Desa Selat",
         "Desa Kayu Putih",
-        "Desa Padangbulia",
+        "Desa Padang Bulia",
         "Desa Pancasari",
         "Desa Silangjana",
         "Desa Panji Anom",
@@ -421,8 +466,8 @@
     ];
 
     // ======================== KONFIGURASI ========================
-    // ⚠️ WAJIB GANTI: Masukkan URL Web App dari Google Apps Script setelah deploy
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxxxx/exec"; // <-- GANTI INI!
+    // ⚠️ GANTI DENGAN URL WEB APP ANDA YANG SUDAH DI-DEPLOY
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyYHnkOlA_khg43kXN-iWyu7K43KrnZWR24ttcMjW6x76UlXPpWXrxGYKHTIjkwhHQCzQ/exec";
     
     // Status: true = SUDAH KIRIM, false = BELUM KIRIM
     let statusState = new Array(daftarWilayah.length).fill(false);
@@ -438,12 +483,19 @@
     const allBelumBtn = document.getElementById('allBelumBtn');
     const syncBtn = document.getElementById('syncBtn');
     const saveAsPngBtn = document.getElementById('saveAsPngBtn');
-    const periodeInput = document.getElementById('periodeInput');
+    const bulanSelect = document.getElementById('bulanSelect');
+    const tahunInput = document.getElementById('tahunInput');
     const periodeTextDisplay = document.getElementById('periodeTextDisplay');
     const toastMsg = document.getElementById('toastMsg');
     const syncStatusDiv = document.getElementById('syncStatus');
 
     totalDesaSpan.innerText = daftarWilayah.length;
+
+    function getPeriodeText() {
+        const bulan = bulanSelect.value;
+        const tahun = tahunInput.value.trim();
+        return tahun ? bulan + " " + tahun : bulan;
+    }
 
     function showToast(message, isError = false) {
         toastMsg.textContent = message;
@@ -458,9 +510,7 @@
         counterSudahSpan.innerText = totalSudah;
         counterBelumSpan.innerText = totalBelum;
         
-        let periodeVal = periodeInput.value.trim();
-        if (periodeVal === "") periodeVal = "Belum diisi";
-        periodeTextDisplay.innerText = `📅 ${periodeVal}`;
+        periodeTextDisplay.innerText = `📅 ${getPeriodeText()}`;
         
         renderInputTable();
         renderPngTable();
@@ -471,7 +521,7 @@
     function renderInputTable() {
         if (!desaTableBodyInput) return;
         desaTableBodyInput.innerHTML = '';
-        daftarWilayah.forEach((wilayah, idx) => {
+        daftarWilayahTampilan.forEach((wilayah, idx) => {
             const isSudah = statusState[idx];
             const row = document.createElement('tr');
             
@@ -539,7 +589,7 @@
     function renderPngTable() {
         if (!desaTableBodyPng) return;
         desaTableBodyPng.innerHTML = '';
-        daftarWilayah.forEach((wilayah, idx) => {
+        daftarWilayahTampilan.forEach((wilayah, idx) => {
             const isSudah = statusState[idx];
             const row = document.createElement('tr');
             
@@ -581,23 +631,34 @@
             return;
         }
         
-        // Cek apakah URL sudah diganti
-        if (WEB_APP_URL === "https://script.google.com/macros/s/AKfycbxxxx/exec") {
-            showToast("⚠️ URL Web App belum diatur! Ganti variabel WEB_APP_URL dengan URL Apps Script yang sudah di-deploy.", true);
-            syncStatusDiv.innerHTML = "⚠️ Konfigurasi belum lengkap: Ganti WEB_APP_URL dengan URL Apps Script!";
-            syncStatusDiv.style.color = "#b91c1c";
+        const bulan = bulanSelect.value;
+        const tahun = tahunInput.value.trim();
+        
+        if (!tahun) {
+            showToast("❌ Masukkan tahun terlebih dahulu!", true);
             return;
         }
         
         isSyncing = true;
         syncBtn.disabled = true;
         syncBtn.innerHTML = "⏳ MENYINKRONKAN...";
-        syncStatusDiv.innerHTML = "🔄 Sedang membaca folder dari Google Drive...";
+        syncStatusDiv.innerHTML = `🔄 Sedang membaca folder ${bulan} ${tahun} dari Google Drive...`;
         syncStatusDiv.style.color = "#f39c12";
-        showToast("🔄 Membaca folder dari Google Drive...", false);
+        showToast(`🔄 Membaca folder ${bulan} ${tahun} dari Google Drive...`, false);
         
         try {
-            const response = await fetch(WEB_APP_URL + "?action=getStatus&t=" + Date.now());
+            // Kirim request ke Google Apps Script
+            const formData = new URLSearchParams();
+            formData.append('bulan', bulan);
+            formData.append('tahun', tahun);
+            
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-encoded',
+                },
+                body: formData.toString()
+            });
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -617,7 +678,7 @@
             updateUI();
             
             const totalSudah = statusState.filter(v => v === true).length;
-            syncStatusDiv.innerHTML = `✅ Sync berhasil! ${totalSudah} desa sudah kirim laporan.`;
+            syncStatusDiv.innerHTML = `✅ Sync berhasil! ${totalSudah} desa sudah kirim laporan untuk ${bulan} ${tahun}.`;
             syncStatusDiv.style.color = "#1a5e3a";
             showToast(`✅ Sinkron selesai! ${totalSudah} desa sudah mengirim laporan.`, false);
             
@@ -654,17 +715,11 @@
     }
 
     async function saveAsPng() {
-        // Sembunyikan tabel input (radio), tampilkan tabel teks untuk PNG
         const inputTable = document.getElementById('desaTableInput');
         const pngTable = document.getElementById('desaTablePng');
         
         if (inputTable) inputTable.style.display = 'none';
         if (pngTable) pngTable.style.display = 'table';
-        
-        // Update periode display
-        let periodeVal = periodeInput.value.trim();
-        if (periodeVal === "") periodeVal = "Belum diisi";
-        periodeTextDisplay.innerText = `📅 ${periodeVal}`;
         
         const element = document.getElementById('captureArea');
         if (!element) return;
@@ -683,7 +738,8 @@
                 windowHeight: element.scrollHeight
             });
             
-            const safeFileName = `Absensi_Pengiriman_Laporan_${periodeVal.replace(/[^a-zA-Z0-9_\-]/g, '_')}.png`;
+            const periodeText = getPeriodeText().replace(/[^a-zA-Z0-9_\-]/g, '_');
+            const safeFileName = `Absensi_Pengiriman_Laporan_${periodeText}.png`;
             
             const link = document.createElement('a');
             link.download = safeFileName;
@@ -695,7 +751,6 @@
             console.error(err);
             showToast(`❌ Gagal: ${err.message}`, true);
         } finally {
-            // Kembalikan ke mode input (radio)
             if (inputTable) inputTable.style.display = 'table';
             if (pngTable) pngTable.style.display = 'none';
             saveAsPngBtn.disabled = false;
@@ -705,7 +760,8 @@
 
     function simpanKeLocal() {
         localStorage.setItem('absensiLaporanStatusFinal', JSON.stringify(statusState));
-        localStorage.setItem('absensiLaporanPeriodeFinal', periodeInput.value.trim());
+        localStorage.setItem('absensiLaporanBulan', bulanSelect.value);
+        localStorage.setItem('absensiLaporanTahun', tahunInput.value.trim());
     }
 
     function loadLocal() {
@@ -720,8 +776,10 @@
                 console.error("Gagal load localStorage:", e);
             }
         }
-        const savedPeriode = localStorage.getItem('absensiLaporanPeriodeFinal');
-        if (savedPeriode) periodeInput.value = savedPeriode;
+        const savedBulan = localStorage.getItem('absensiLaporanBulan');
+        if (savedBulan) bulanSelect.value = savedBulan;
+        const savedTahun = localStorage.getItem('absensiLaporanTahun');
+        if (savedTahun) tahunInput.value = savedTahun;
         
         updateUI();
     }
@@ -731,22 +789,17 @@
         allSudahBtn.addEventListener('click', allSudah);
         allBelumBtn.addEventListener('click', allBelum);
         saveAsPngBtn.addEventListener('click', saveAsPng);
-        periodeInput.addEventListener('input', () => { updateUI(); simpanKeLocal(); });
+        bulanSelect.addEventListener('change', () => { updateUI(); simpanKeLocal(); });
+        tahunInput.addEventListener('input', () => { updateUI(); simpanKeLocal(); });
     }
 
     function init() {
         bindEvents();
         loadLocal();
         
-        // Auto sync saat pertama buka (delay 1 detik)
+        // Auto sync saat pertama buka
         setTimeout(() => {
-            if (WEB_APP_URL !== "https://script.google.com/macros/s/AKfycbyYHnkOlA_khg43kXN-iWyu7K43KrnZWR24ttcMjW6x76UlXPpWXrxGYKHTIjkwhHQCzQ/exec") {
-                syncFromDrive();
-            } else {
-                syncStatusDiv.innerHTML = "⚠️ Konfigurasi belum lengkap: Ganti WEB_APP_URL dengan URL Apps Script!";
-                syncStatusDiv.style.color = "#b91c1c";
-                showToast("⚠️ Silakan ganti WEB_APP_URL dengan URL Google Apps Script yang sudah di-deploy", true);
-            }
+            syncFromDrive();
         }, 1000);
     }
     
